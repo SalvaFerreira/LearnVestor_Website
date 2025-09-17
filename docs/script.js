@@ -219,3 +219,79 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000 + index * 1000);
     });
 });
+
+// Waitlist form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const waitlistForm = document.getElementById('waitlistForm');
+    
+    if (waitlistForm) {
+        waitlistForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Basic email validation
+            if (!isValidEmail(email)) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            // Update button to show loading
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call (replace with actual implementation)
+            setTimeout(() => {
+                // For now, just show success message
+                // In production, you'd send this to your backend
+                console.log('Email submitted to waitlist:', email);
+                
+                showMessage('🎉 Welcome to the waitlist! We\'ll notify you when LearnVestor launches.', 'success');
+                
+                // Reset form
+                this.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Track the signup (you can integrate with analytics)
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'waitlist_signup', {
+                        'event_category': 'engagement',
+                        'event_label': 'email_signup'
+                    });
+                }
+            }, 1500);
+        });
+    }
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    function showMessage(message, type) {
+        // Remove any existing messages
+        const existingMessage = document.querySelector('.form-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // Create new message element
+        const messageEl = document.createElement('div');
+        messageEl.className = `form-message ${type}`;
+        messageEl.innerHTML = message;
+        
+        // Insert message after the form
+        const form = document.getElementById('waitlistForm');
+        form.parentNode.insertBefore(messageEl, form.nextSibling);
+        
+        // Auto-remove message after 5 seconds
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.remove();
+            }
+        }, 5000);
+    }
+});
