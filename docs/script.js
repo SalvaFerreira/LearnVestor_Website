@@ -70,6 +70,15 @@ document.addEventListener('DOMContentLoaded', function() {
         el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(el);
     });
+    
+    // Fallback: Show screenshots after 2 seconds if they're still hidden
+    setTimeout(() => {
+        const hiddenScreenshots = document.querySelectorAll('.screenshot-item[style*="opacity: 0"]');
+        hiddenScreenshots.forEach(item => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        });
+    }, 2000);
 });
 
 // Counter animation for stats
