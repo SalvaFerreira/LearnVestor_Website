@@ -73,17 +73,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Counter animation for stats
-function animateCounter(element, target, duration = 2000) {
+function animateCounter(element, target, originalText, duration = 2000) {
     let start = 0;
     const increment = target / (duration / 16);
     
     function updateCounter() {
         start += increment;
         if (start < target) {
-            element.textContent = Math.floor(start).toLocaleString();
+            element.textContent = Math.floor(start);
             requestAnimationFrame(updateCounter);
         } else {
-            element.textContent = target.toLocaleString();
+            element.textContent = originalText; // Restore original text exactly
         }
     }
     updateCounter();
@@ -94,20 +94,26 @@ const statsObserver = new IntersectionObserver(function(entries) {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const statNumber = entry.target.querySelector('.stat-number');
-            const text = statNumber.textContent;
+            const originalText = statNumber.textContent;
             
-            if (text.includes('K+')) {
-                const number = parseInt(text.replace('K+', '')) * 1000;
-                animateCounter(statNumber, number);
-                statNumber.textContent = text; // Restore original format
-            } else if (text.includes('%')) {
-                const number = parseInt(text.replace('%', ''));
-                animateCounter(statNumber, number);
-                statNumber.textContent = number + '%';
+            // Skip animation for year (2025) - just keep it as is
+            if (originalText === '2025') {
+                statsObserver.unobserve(entry.target);
+                return;
+            }
+            
+            if (originalText.includes('K+')) {
+                const number = parseInt(originalText.replace('K+', '')) * 1000;
+                animateCounter(statNumber, number, originalText);
+            } else if (originalText.includes('%')) {
+                const number = parseInt(originalText.replace('%', ''));
+                animateCounter(statNumber, number, originalText);
+            } else if (originalText.includes('+')) {
+                const number = parseInt(originalText.replace('+', ''));
+                animateCounter(statNumber, number, originalText);
             } else {
-                const number = parseInt(text.replace('+', ''));
-                animateCounter(statNumber, number);
-                statNumber.textContent = number + '+';
+                // For plain numbers like "2025", don't animate
+                return;
             }
             
             statsObserver.unobserve(entry.target);

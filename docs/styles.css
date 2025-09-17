@@ -244,6 +244,12 @@ p {
     font-size: 2rem;
     font-weight: 700;
     color: var(--text-white);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    user-select: text;
+    -webkit-font-feature-settings: "tnum";
+    font-family: 'Inter', monospace;
 }
 
 .stat-label {
