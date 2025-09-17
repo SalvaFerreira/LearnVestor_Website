@@ -289,33 +289,39 @@ p {
 }
 
 .card-1 {
-    top: 8%;
-    left: -35%;
+    top: 10%;
+    left: -30%;
     animation-delay: 0s;
 }
 
 .card-2 {
-    top: 30%;
-    right: -45%;
+    top: 20%;
+    right: -35%;
     animation-delay: 2s;
 }
 
 .card-3 {
-    bottom: 30%;
-    left: -40%;
+    bottom: 45%;
+    left: -35%;
     animation-delay: 4s;
 }
 
 .card-4 {
-    top: 55%;
-    left: -50%;
+    top: 65%;
+    left: -40%;
     animation-delay: 1s;
 }
 
 .card-5 {
-    bottom: 55%;
-    right: -40%;
+    bottom: 20%;
+    right: -30%;
     animation-delay: 3s;
+}
+
+.card-6 {
+    bottom: 10%;
+    left: -25%;
+    animation-delay: 5s;
 }
 
 .card-6 {
