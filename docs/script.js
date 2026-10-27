@@ -235,15 +235,41 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Waitlist backend (Supabase). The publishable key is public by design: the only thing it
+// can do here is call join_waitlist(); the waitlist table itself is not readable.
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'YOUR-PUBLISHABLE-KEY';
+
+async function joinWaitlist(email) {
+    if (SUPABASE_URL.includes('YOUR-PROJECT-REF')) {
+        throw new Error('Waitlist backend is not configured (see App/README.md).');
+    }
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_waitlist`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_PUBLISHABLE_KEY
+        },
+        body: JSON.stringify({
+            p_email: email,
+            p_locale: (navigator.language || 'en').slice(0, 10),
+            p_source: 'website'
+        })
+    });
+    if (!response.ok) {
+        throw new Error(`Waitlist request failed with ${response.status}`);
+    }
+}
+
 // Waitlist form functionality
 document.addEventListener('DOMContentLoaded', function() {
     const waitlistForm = document.getElementById('waitlistForm');
     
     if (waitlistForm) {
-        waitlistForm.addEventListener('submit', function(e) {
+        waitlistForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
+
+            const email = document.getElementById('email').value.trim();
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             
@@ -257,19 +283,11 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
             submitBtn.disabled = true;
             
-            // Simulate API call (replace with actual implementation)
-            setTimeout(() => {
-                // For now, just show success message
-                // In production, you'd send this to your backend
-                console.log('Email submitted to waitlist:', email);
-                
+            try {
+                await joinWaitlist(email);
                 showMessage('🎉 Welcome to the waitlist! We\'ll notify you when LearnVestor launches.', 'success');
-                
-                // Reset form
                 this.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
+
                 // Track the signup (you can integrate with analytics)
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'waitlist_signup', {
@@ -277,7 +295,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         'event_label': 'email_signup'
                     });
                 }
-            }, 1500);
+            } catch (error) {
+                console.error(error);
+                showMessage('Sorry, we couldn\'t add you right now. Please try again later.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
     }
     
