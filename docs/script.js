@@ -181,43 +181,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Waitlist and feedback backend: a small Supabase project (setup in supabase/README.md).
-// The publishable key is public by design: it can only call join_waitlist() and
-// submit_feedback(); the tables themselves are not readable.
-const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'YOUR-PUBLISHABLE-KEY';
+// Waitlist and feedback are sent to Formspree, which emails each submission
+// and keeps it in the Formspree dashboard. The endpoint is public by design.
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpppdnvy';
 
 const visitorLocale = (navigator.language || 'en').slice(0, 10);
 // The demo links here with ?from=demo, so feedback says where it came from.
 const visitorSource = new URLSearchParams(window.location.search).get('from') === 'demo' ? 'demo' : 'website';
 
-async function callRpc(fn, args) {
-    if (SUPABASE_URL.includes('YOUR-PROJECT-REF')) {
-        throw new Error('The website backend is not configured (see supabase/README.md).');
-    }
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+async function sendToFormspree(fields) {
+    const response = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_PUBLISHABLE_KEY
+            'Accept': 'application/json'
         },
-        body: JSON.stringify(args)
+        body: JSON.stringify({ ...fields, source: visitorSource, locale: visitorLocale })
     });
     if (!response.ok) {
-        throw new Error(`${fn} failed with ${response.status}`);
+        throw new Error(`Formspree failed with ${response.status}`);
     }
 }
 
 function joinWaitlist(email) {
-    return callRpc('join_waitlist', { p_email: email, p_locale: visitorLocale, p_source: visitorSource });
+    return sendToFormspree({ _subject: 'LearnVestor: new waitlist signup', type: 'waitlist', email });
 }
 
 function submitFeedback(message, email) {
-    return callRpc('submit_feedback', {
-        p_message: message,
-        p_email: email || null,
-        p_source: visitorSource,
-        p_locale: visitorLocale
+    return sendToFormspree({
+        _subject: `LearnVestor: new feedback (${visitorSource})`,
+        type: 'feedback',
+        message,
+        ...(email ? { email } : {})
     });
 }
 
