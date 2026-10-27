@@ -81,60 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000);
 });
 
-// Counter animation for stats
-function animateCounter(element, target, originalText, duration = 2000) {
-    let start = 0;
-    const increment = target / (duration / 16);
-    
-    function updateCounter() {
-        start += increment;
-        if (start < target) {
-            element.textContent = Math.floor(start);
-            requestAnimationFrame(updateCounter);
-        } else {
-            element.textContent = originalText; // Restore original text exactly
-        }
-    }
-    updateCounter();
-}
-
-// Animate stats when they come into view
-const statsObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const statNumber = entry.target.querySelector('.stat-number');
-            const originalText = statNumber.textContent;
-            
-            // Skip animation for year (2025) - just keep it as is
-            if (originalText === '2025') {
-                statsObserver.unobserve(entry.target);
-                return;
-            }
-            
-            if (originalText.includes('K+')) {
-                const number = parseInt(originalText.replace('K+', '')) * 1000;
-                animateCounter(statNumber, number, originalText);
-            } else if (originalText.includes('%')) {
-                const number = parseInt(originalText.replace('%', ''));
-                animateCounter(statNumber, number, originalText);
-            } else if (originalText.includes('+')) {
-                const number = parseInt(originalText.replace('+', ''));
-                animateCounter(statNumber, number, originalText);
-            } else {
-                // For plain numbers like "2025", don't animate
-                return;
-            }
-            
-            statsObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.5 });
-
-document.addEventListener('DOMContentLoaded', function() {
-    const stats = document.querySelectorAll('.stat');
-    stats.forEach(stat => statsObserver.observe(stat));
-});
-
 // Parallax effect for hero section
 window.addEventListener('scroll', function() {
     const scrolled = window.pageYOffset;
@@ -235,30 +181,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Waitlist backend (Supabase). The publishable key is public by design: the only thing it
-// can do here is call join_waitlist(); the waitlist table itself is not readable.
+// Waitlist and feedback backend: a small Supabase project (setup in supabase/README.md).
+// The publishable key is public by design: it can only call join_waitlist() and
+// submit_feedback(); the tables themselves are not readable.
 const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'YOUR-PUBLISHABLE-KEY';
 
-async function joinWaitlist(email) {
+const visitorLocale = (navigator.language || 'en').slice(0, 10);
+// The demo links here with ?from=demo, so feedback says where it came from.
+const visitorSource = new URLSearchParams(window.location.search).get('from') === 'demo' ? 'demo' : 'website';
+
+async function callRpc(fn, args) {
     if (SUPABASE_URL.includes('YOUR-PROJECT-REF')) {
-        throw new Error('Waitlist backend is not configured (see App/README.md).');
+        throw new Error('The website backend is not configured (see supabase/README.md).');
     }
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_waitlist`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'apikey': SUPABASE_PUBLISHABLE_KEY
         },
-        body: JSON.stringify({
-            p_email: email,
-            p_locale: (navigator.language || 'en').slice(0, 10),
-            p_source: 'website'
-        })
+        body: JSON.stringify(args)
     });
     if (!response.ok) {
-        throw new Error(`Waitlist request failed with ${response.status}`);
+        throw new Error(`${fn} failed with ${response.status}`);
     }
+}
+
+function joinWaitlist(email) {
+    return callRpc('join_waitlist', { p_email: email, p_locale: visitorLocale, p_source: visitorSource });
+}
+
+function submitFeedback(message, email) {
+    return callRpc('submit_feedback', {
+        p_message: message,
+        p_email: email || null,
+        p_source: visitorSource,
+        p_locale: visitorLocale
+    });
 }
 
 // Waitlist form functionality
@@ -275,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Basic email validation
             if (!isValidEmail(email)) {
-                showMessage('Please enter a valid email address.', 'error');
+                showMessage(this, 'Please enter a valid email address.', 'error');
                 return;
             }
             
@@ -285,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 await joinWaitlist(email);
-                showMessage('🎉 Welcome to the waitlist! We\'ll notify you when LearnVestor launches.', 'success');
+                showMessage(this, '🎉 Welcome to the waitlist! We\'ll notify you when LearnVestor launches.', 'success');
                 this.reset();
 
                 // Track the signup (you can integrate with analytics)
@@ -297,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error(error);
-                showMessage('Sorry, we couldn\'t add you right now. Please try again later.', 'error');
+                showMessage(this, 'Sorry, we couldn\'t add you right now. Please try again later.', 'error');
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
@@ -305,14 +265,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    const feedbackForm = document.getElementById('feedbackForm');
+
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const message = document.getElementById('feedbackMessage').value.trim();
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Bots fill in the hidden field: pretend it worked.
+            if (document.getElementById('feedbackWebsite').value) {
+                showMessage(this, 'Thank you for your feedback!', 'success');
+                this.reset();
+                return;
+            }
+            if (!message) {
+                showMessage(this, 'Please write your feedback first.', 'error');
+                return;
+            }
+            if (email && !isValidEmail(email)) {
+                showMessage(this, 'Please enter a valid email address, or leave it empty.', 'error');
+                return;
+            }
+
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                await submitFeedback(message, email);
+                showMessage(this, 'Thank you for your feedback! 💬', 'success');
+                this.reset();
+            } catch (error) {
+                console.error(error);
+                showMessage(this, 'Sorry, we couldn\'t send your feedback right now. Please try again later.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
     
-    function showMessage(message, type) {
-        // Remove any existing messages
-        const existingMessage = document.querySelector('.form-message');
+    function showMessage(form, message, type) {
+        // Remove any existing message for this form
+        const existingMessage = form.parentNode.querySelector('.form-message');
         if (existingMessage) {
             existingMessage.remove();
         }
@@ -323,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         messageEl.innerHTML = message;
         
         // Insert message after the form
-        const form = document.getElementById('waitlistForm');
         form.parentNode.insertBefore(messageEl, form.nextSibling);
         
         // Auto-remove message after 5 seconds

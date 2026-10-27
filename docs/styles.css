@@ -230,35 +230,6 @@ p {
     margin-bottom: 48px;
 }
 
-.hero-stats {
-    display: flex;
-    gap: 48px;
-}
-
-.stat {
-    text-align: center;
-}
-
-.stat-number {
-    display: block;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-white);
-    font-feature-settings: "tnum";
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    user-select: text;
-    -webkit-font-feature-settings: "tnum";
-    font-family: 'Inter', monospace;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.8);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 .hero-image {
     position: relative;
     display: flex;
@@ -332,8 +303,6 @@ p {
     right: -20%;
     animation-delay: 1ms;
 }
-
-
 
 @keyframes float {
     0%, 100% { transform: translateY(0px); }
@@ -598,6 +567,65 @@ section {
     font-size: 1.25rem;
 }
 
+/* Feedback Section */
+.feedback {
+    background: var(--bg-light);
+}
+
+.feedback-content {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.feedback-content .section-subtitle {
+    margin-bottom: 32px;
+}
+
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+}
+
+.feedback-form textarea,
+.feedback-form input[type="email"] {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-white);
+    color: var(--text-white);
+    font: inherit;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.feedback-form textarea {
+    resize: vertical;
+    min-height: 140px;
+}
+
+.feedback-form textarea:focus,
+.feedback-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.feedback-form button {
+    align-self: center;
+}
+
+/* Honeypot: hidden from people, visible to naive bots. */
+.hp-field {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
 /* Form Messages */
 .form-message {
     margin-top: 20px;
@@ -813,18 +841,7 @@ section {
         width: 280px;
         justify-content: center;
     }
-    
-    .hero-stats {
-        justify-content: center;
-        gap: 24px;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-    
-    .stat {
-        min-width: 100px;
-    }
-    
+
     .hero-image {
         width: 400px;
         height: 350px;
@@ -888,20 +905,7 @@ section {
         padding: 14px 20px;
         font-size: 0.95rem;
     }
-    
-    .hero-stats {
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-    
-    .stat-number {
-        font-size: 1.5rem;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem;
-    }
-    
+
     .hero-image {
         width: 320px;
         height: 280px;

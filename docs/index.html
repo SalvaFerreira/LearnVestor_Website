@@ -48,6 +48,9 @@
                     <a href="#waitlist" class="nav-link">Join Waitlist</a>
                 </li>
                 <li class="nav-item">
+                    <a href="#feedback" class="nav-link">Feedback</a>
+                </li>
+                <li class="nav-item">
                     <a href="demo/" class="nav-link">Try the Demo</a>
                 </li>
             </ul>
@@ -79,20 +82,6 @@
                         <i class="fas fa-bell"></i>
                         Join Waitlist
                     </a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">500+</span>
-                        <span class="stat-label">Early Signups</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">2026</span>
-                        <span class="stat-label">Launch Year</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">50+</span>
-                        <span class="stat-label">Lessons Ready</span>
-                    </div>
                 </div>
             </div>
             <div class="hero-image">
@@ -309,6 +298,28 @@
         </div>
     </section>
 
+    <!-- Feedback Section -->
+    <section id="feedback" class="feedback">
+        <div class="container">
+            <div class="feedback-content">
+                <h2 class="section-title">Tell Us What You Think</h2>
+                <p class="section-subtitle">
+                    Tried the demo? Found a mistake or have an idea? We read every message.
+                </p>
+                <form class="feedback-form" id="feedbackForm">
+                    <textarea id="feedbackMessage" name="message" rows="5" maxlength="2000" placeholder="Your feedback..." required></textarea>
+                    <input type="email" id="feedbackEmail" name="email" placeholder="Your email (optional, only if you'd like a reply)">
+                    <!-- Left empty by people; bots fill it in. -->
+                    <input type="text" id="feedbackWebsite" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Send Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -337,6 +348,7 @@
                         <li><a href="#how-it-works">How It Works</a></li>
                         <li><a href="#screenshots">Screenshots</a></li>
                         <li><a href="#waitlist">Join Waitlist</a></li>
+                        <li><a href="#feedback">Feedback</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
